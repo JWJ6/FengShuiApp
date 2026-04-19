@@ -13,19 +13,22 @@ const reportRoutes = require('./routes/report');
 const stripeRoutes = require('./routes/stripe');
 
 // --- Validate required env vars ---
-const REQUIRED_ENV = ['JWT_SECRET', 'DB_HOST', 'DB_NAME', 'ANTHROPIC_API_KEY'];
+const REQUIRED_ENV = ['JWT_SECRET', 'ANTHROPIC_API_KEY'];
 for (const key of REQUIRED_ENV) {
   if (!process.env[key]) {
     console.error(`Missing required env var: ${key}`);
     process.exit(1);
   }
 }
-if (process.env.NODE_ENV === 'production') {
-  for (const key of ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET']) {
-    if (!process.env[key] || process.env[key].includes('your_')) {
-      console.error(`Missing or placeholder Stripe env var: ${key}`);
-      process.exit(1);
-    }
+// Database: need either DATABASE_URL or DB_HOST+DB_NAME
+if (!process.env.DATABASE_URL && (!process.env.DB_HOST || !process.env.DB_NAME)) {
+  console.error('Missing database config: set DATABASE_URL or DB_HOST+DB_NAME');
+  process.exit(1);
+}
+if (process.env.NODE_ENV === 'production' && process.env.STRIPE_SECRET_KEY) {
+  if (process.env.STRIPE_SECRET_KEY.includes('your_')) {
+    console.error('Stripe secret key is still a placeholder');
+    process.exit(1);
   }
 }
 
