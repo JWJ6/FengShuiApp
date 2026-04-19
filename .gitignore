@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Environment files (NEVER commit secrets)
+.env
+.env.local
+.env*.local
+
+# Uploads
+uploads/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# iOS/Mobile build
+ios/Pods/
+ios/build/
+android/app/build/
+*.xcworkspace
+*.xcuserdata
