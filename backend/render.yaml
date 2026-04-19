@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: fengshui-api
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: node src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
