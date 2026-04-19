@@ -73,7 +73,7 @@ router.post('/', authMiddleware, createReportLimiter, upload.array('images', 5),
 
     // Get user language preference
     const userResult = await pool.query('SELECT language FROM users WHERE id = $1', [req.userId]);
-    const language = req.body.language || userResult.rows[0]?.language || 'zh';
+    const language = req.body.language || userResult.rows[0]?.language || 'en';
 
     // Phase 1: Quick analysis (fast, ~3-5 seconds)
     const quickResult = await analyzeQuick(imagePaths, language);
