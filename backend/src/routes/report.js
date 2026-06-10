@@ -24,7 +24,8 @@ const storage = multer.diskStorage({
     cb(null, path.join(__dirname, '../../uploads'));
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
+    const mimeToExt = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/heic': '.heic', 'image/heif': '.heif', 'image/webp': '.webp' };
+    const ext = mimeToExt[file.mimetype] || '.jpg';
     cb(null, `${uuidv4()}${ext}`);
   },
 });
@@ -33,11 +34,11 @@ const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/heic', 'image/heif'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only JPEG, PNG, and HEIC images are allowed'));
+      cb(new Error('Only JPEG, PNG, HEIC, and WebP images are allowed'));
     }
   },
 });

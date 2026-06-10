@@ -63,7 +63,7 @@ router.post('/checkout', authMiddleware, async (req, res) => {
 });
 
 // Stripe webhook — called by Stripe when payment completes
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+router.post('/webhook', async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
 

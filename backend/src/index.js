@@ -13,7 +13,7 @@ const reportRoutes = require('./routes/report');
 const stripeRoutes = require('./routes/stripe');
 
 // --- Validate required env vars ---
-const REQUIRED_ENV = ['JWT_SECRET', 'ANTHROPIC_API_KEY'];
+const REQUIRED_ENV = ['JWT_SECRET', 'ANTHROPIC_API_KEY', 'RESEND_API_KEY'];
 for (const key of REQUIRED_ENV) {
   if (!process.env[key]) {
     console.error(`Missing required env var: ${key}`);
