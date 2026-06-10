@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { reportAPI } from '@/lib/api';
+import { reportAPI, palmReadingAPI } from '@/lib/api';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -12,12 +12,22 @@ export default function DashboardPage() {
   const [reports, setReports] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [tab, setTab] = useState<'all' | 'fengshui' | 'palm'>('all');
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { router.push('/login'); return; }
-    reportAPI.getAll()
-      .then((data) => setReports(data.reports))
+    Promise.all([
+      reportAPI.getAll().catch(() => ({ reports: [] })),
+      palmReadingAPI.getAll().catch(() => ({ reports: [] })),
+    ])
+      .then(([fengshui, palm]) => {
+        const all = [
+          ...fengshui.reports.map((r: any) => ({ ...r, report_type: r.report_type || 'fengshui' })),
+          ...palm.reports.map((r: any) => ({ ...r, report_type: 'palm_reading' })),
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        setReports(all);
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [user, authLoading, router]);
@@ -34,25 +44,56 @@ export default function DashboardPage() {
     });
   };
 
+  const filtered = tab === 'all' ? reports
+    : tab === 'fengshui' ? reports.filter(r => r.report_type === 'fengshui')
+    : reports.filter(r => r.report_type === 'palm_reading');
+
+  const getReportLink = (r: any) => {
+    return r.report_type === 'palm_reading' ? `/palm-reading/report/${r.id}` : `/report/${r.id}`;
+  };
+
   if (authLoading || loading) {
     return <div className="min-h-[60vh] flex items-center justify-center"><div className="animate-spin text-3xl">☯</div></div>;
   }
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-12">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-text">My Reports</h1>
           <div className="flex items-center gap-2 mt-1 text-gold text-sm">
             <span className="w-6 h-px bg-gold" /><span>◆</span><span className="w-6 h-px bg-gold" />
           </div>
         </div>
-        <Link
-          href="/analyze"
-          className="bg-primary text-gold-light font-medium text-sm px-5 py-2.5 rounded-lg hover:bg-primary-dark transition-colors"
-        >
-          + New Analysis
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/analyze"
+            className="bg-primary text-gold-light font-medium text-sm px-4 py-2.5 rounded-lg hover:bg-primary-dark transition-colors"
+          >
+            + Feng Shui
+          </Link>
+          <Link
+            href="/palm-reading"
+            className="bg-gold text-primary-dark font-medium text-sm px-4 py-2.5 rounded-lg hover:bg-gold-light transition-colors"
+          >
+            + Palm Reading
+          </Link>
+        </div>
+      </div>
+
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-6">
+        {(['all', 'fengshui', 'palm'] as const).map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`text-sm font-medium px-4 py-2 rounded-lg transition-colors ${
+              tab === t ? 'bg-primary text-gold-light' : 'bg-bg-card text-text-secondary hover:text-primary border border-border'
+            }`}
+          >
+            {t === 'all' ? 'All' : t === 'fengshui' ? '☯ Feng Shui' : '🤚 Palm Reading'}
+          </button>
+        ))}
       </div>
 
       {error && (
@@ -61,30 +102,33 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {reports.length === 0 && !error ? (
+      {filtered.length === 0 && !error ? (
         <div className="text-center py-20">
           <span className="text-6xl opacity-30">☯</span>
           <p className="text-text-muted mt-4">No reports yet.</p>
-          <Link
-            href="/analyze"
-            className="inline-block mt-4 text-primary font-medium hover:underline"
-          >
-            Start your first analysis
-          </Link>
+          <div className="flex gap-3 justify-center mt-4">
+            <Link href="/analyze" className="text-primary font-medium hover:underline">Start a Feng Shui analysis</Link>
+            <span className="text-text-muted">or</span>
+            <Link href="/palm-reading" className="text-primary font-medium hover:underline">Get a palm reading</Link>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
-          {reports.map((r) => (
+          {filtered.map((r) => (
             <Link
               key={r.id}
-              href={`/report/${r.id}`}
+              href={getReportLink(r)}
               className="flex items-center gap-4 bg-bg-card rounded-xl p-4 border border-border hover:border-gold/50 transition-colors group"
             >
               <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center bg-bg font-bold text-sm ${getScoreColor(r.overall_score)}`}>
                 {r.overall_score}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-text-secondary">{formatDate(r.created_at)}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{r.report_type === 'palm_reading' ? '🤚' : '☯'}</span>
+                  <span className="text-sm font-medium text-text">{r.report_type === 'palm_reading' ? 'Palm Reading' : 'Feng Shui'}</span>
+                </div>
+                <p className="text-xs text-text-secondary mt-0.5">{formatDate(r.created_at)}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded ${r.is_paid ? 'bg-jade/10 text-jade' : 'bg-bg-secondary text-text-muted'}`}>
                     {r.is_paid ? 'Unlocked' : 'Free'}

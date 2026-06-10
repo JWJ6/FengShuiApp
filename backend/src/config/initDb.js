@@ -41,6 +41,7 @@ const initDatabase = async () => {
       DO $$ BEGIN
         ALTER TABLE reports ADD COLUMN IF NOT EXISTS quick_data JSONB;
         ALTER TABLE reports ADD COLUMN IF NOT EXISTS analysis_status VARCHAR(20) DEFAULT 'quick';
+        ALTER TABLE reports ADD COLUMN IF NOT EXISTS report_type VARCHAR(20) DEFAULT 'fengshui';
       EXCEPTION WHEN OTHERS THEN NULL;
       END $$;
 
@@ -59,6 +60,7 @@ const initDatabase = async () => {
       CREATE INDEX IF NOT EXISTS idx_reports_user_id ON reports(user_id);
       CREATE INDEX IF NOT EXISTS idx_reports_user_created ON reports(user_id, created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_reports_analysis_status ON reports(analysis_status);
+      CREATE INDEX IF NOT EXISTS idx_reports_type ON reports(report_type);
       CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
       CREATE INDEX IF NOT EXISTS idx_payments_report_id ON payments(report_id);
       CREATE INDEX IF NOT EXISTS idx_verification_codes_email ON verification_codes(email, expires_at);

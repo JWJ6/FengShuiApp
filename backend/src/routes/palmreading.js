@@ -5,20 +5,18 @@ const { v4: uuidv4 } = require('uuid');
 const rateLimit = require('express-rate-limit');
 const pool = require('../config/db');
 const authMiddleware = require('../middleware/auth');
-const { analyzeQuick, analyzeDetailed } = require('../services/fengShuiService');
+const { analyzeQuick, analyzeDetailed } = require('../services/palmReadingService');
 
 const router = express.Router();
 
-// Rate limit report creation (expensive AI calls)
 const createReportLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // 10 reports per hour
-  message: { error: 'Too many reports created, please try again later' },
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many readings created, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Configure multer for image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, path.join(__dirname, '../../uploads'));
@@ -32,7 +30,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'];
     if (allowedTypes.includes(file.mimetype)) {
@@ -52,9 +50,9 @@ const runDetailedAnalysis = async (reportId, imagePaths, language, quickResult) 
       `UPDATE reports SET report_data = $1, analysis_status = 'complete' WHERE id = $2`,
       [JSON.stringify(detailed), reportId]
     );
-    console.log(`Detailed analysis complete for report ${reportId}`);
+    console.log(`Detailed palm analysis complete for report ${reportId}`);
   } catch (error) {
-    console.error(`Detailed analysis failed for report ${reportId}:`, error);
+    console.error(`Detailed palm analysis failed for report ${reportId}:`, error);
     await pool.query(
       `UPDATE reports SET analysis_status = 'failed' WHERE id = $1`,
       [reportId]
@@ -62,8 +60,8 @@ const runDetailedAnalysis = async (reportId, imagePaths, language, quickResult) 
   }
 };
 
-// Create new report (Phase 1: quick analysis, then background detailed)
-router.post('/', authMiddleware, createReportLimiter, upload.array('images', 10), async (req, res) => {
+// Create new palm reading report
+router.post('/', authMiddleware, createReportLimiter, upload.array('images', 5), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'At least one image is required' });
@@ -72,24 +70,21 @@ router.post('/', authMiddleware, createReportLimiter, upload.array('images', 10)
     const imagePaths = req.files.map((f) => f.path);
     const imageUrls = req.files.map((f) => `/uploads/${f.filename}`);
 
-    // Get user language preference
     const userResult = await pool.query('SELECT language FROM users WHERE id = $1', [req.userId]);
     const language = req.body.language || userResult.rows[0]?.language || 'en';
 
-    // Phase 1: Quick analysis (fast, ~3-5 seconds)
+    // Phase 1: Quick analysis
     const quickResult = await analyzeQuick(imagePaths, language);
 
-    // Save report with quick data
     const result = await pool.query(
-      `INSERT INTO reports (user_id, image_urls, overall_score, quick_data, analysis_status, language)
-       VALUES ($1, $2, $3, $4, 'analyzing', $5)
+      `INSERT INTO reports (user_id, image_urls, overall_score, quick_data, analysis_status, language, report_type)
+       VALUES ($1, $2, $3, $4, 'analyzing', $5, 'palm_reading')
        RETURNING id, overall_score, created_at`,
       [req.userId, imageUrls, quickResult.overall_score, JSON.stringify(quickResult), language]
     );
 
     const report = result.rows[0];
 
-    // Return quick result immediately
     res.status(201).json({
       id: report.id,
       overall_score: quickResult.overall_score,
@@ -97,27 +92,28 @@ router.post('/', authMiddleware, createReportLimiter, upload.array('images', 10)
       areas: quickResult.areas,
       analysis_status: 'analyzing',
       is_paid: false,
+      report_type: 'palm_reading',
       created_at: report.created_at,
     });
 
-    // Phase 2: Kick off detailed analysis in background (don't await)
+    // Phase 2: Kick off detailed analysis in background
     runDetailedAnalysis(report.id, imagePaths, language, quickResult);
   } catch (error) {
-    console.error('Create report error:', error);
-    res.status(500).json({ error: 'Failed to analyze image' });
+    console.error('Create palm reading error:', error);
+    res.status(500).json({ error: 'Failed to analyze images' });
   }
 });
 
-// Check analysis status (for polling)
+// Check analysis status
 router.get('/:id/status', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, analysis_status FROM reports WHERE id = $1 AND user_id = $2',
+      `SELECT id, analysis_status FROM reports WHERE id = $1 AND user_id = $2 AND report_type = 'palm_reading'`,
       [req.params.id, req.userId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Report not found' });
+      return res.status(404).json({ error: 'Reading not found' });
     }
 
     res.json({ id: result.rows[0].id, analysis_status: result.rows[0].analysis_status });
@@ -130,12 +126,12 @@ router.get('/:id/status', authMiddleware, async (req, res) => {
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM reports WHERE id = $1 AND user_id = $2',
+      `SELECT * FROM reports WHERE id = $1 AND user_id = $2 AND report_type = 'palm_reading'`,
       [req.params.id, req.userId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Report not found' });
+      return res.status(404).json({ error: 'Reading not found' });
     }
 
     const report = result.rows[0];
@@ -148,13 +144,14 @@ router.get('/:id', authMiddleware, async (req, res) => {
         overall_score: report.overall_score,
         analysis_status: report.analysis_status,
         is_paid: report.is_paid,
+        report_type: 'palm_reading',
         image_urls: report.image_urls,
         created_at: report.created_at,
       });
     }
 
     if (report.is_paid && isComplete) {
-      // Full report
+      // Full report — all areas with solutions
       res.json({
         id: report.id,
         overall_score: analysis.overall_score,
@@ -163,25 +160,28 @@ router.get('/:id', authMiddleware, async (req, res) => {
         general_tips: analysis.general_tips,
         analysis_status: report.analysis_status,
         is_paid: true,
+        report_type: 'palm_reading',
         image_urls: report.image_urls,
         created_at: report.created_at,
       });
     } else if (isComplete) {
-      // Free portion of detailed report — no solutions (paywall)
+      // Free portion — show Wealth area preview (no solutions), lock the rest
+      // Find wealth area (first area)
+      const wealthArea = analysis.areas[0];
       res.json({
         id: report.id,
         overall_score: analysis.overall_score,
         overall_summary: analysis.overall_summary,
-        first_area: analysis.areas[0]
+        first_area: wealthArea
           ? {
-              name: analysis.areas[0].name,
-              score: analysis.areas[0].score,
-              issues: analysis.areas[0].issues.map((issue) => ({
+              name: wealthArea.name,
+              score: wealthArea.score,
+              issues: wealthArea.issues.map((issue) => ({
                 description: issue.description,
                 impact: issue.impact,
                 severity: issue.severity,
               })),
-              positives: analysis.areas[0].positives,
+              positives: wealthArea.positives,
             }
           : null,
         total_areas: analysis.areas.length,
@@ -194,6 +194,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
         })),
         analysis_status: report.analysis_status,
         is_paid: false,
+        report_type: 'palm_reading',
         image_urls: report.image_urls,
         created_at: report.created_at,
       });
@@ -206,17 +207,18 @@ router.get('/:id', authMiddleware, async (req, res) => {
         areas: analysis.areas,
         analysis_status: report.analysis_status,
         is_paid: false,
+        report_type: 'palm_reading',
         image_urls: report.image_urls,
         created_at: report.created_at,
       });
     }
   } catch (error) {
-    console.error('Get report error:', error);
-    res.status(500).json({ error: 'Failed to get report' });
+    console.error('Get palm reading error:', error);
+    res.status(500).json({ error: 'Failed to get reading' });
   }
 });
 
-// Get all reports for user (list view, paginated)
+// List all palm reading reports for user
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -224,10 +226,10 @@ router.get('/', authMiddleware, async (req, res) => {
     const offset = (page - 1) * limit;
 
     const [countResult, result] = await Promise.all([
-      pool.query(`SELECT COUNT(*) FROM reports WHERE user_id = $1 AND (report_type = 'fengshui' OR report_type IS NULL)`, [req.userId]),
+      pool.query(`SELECT COUNT(*) FROM reports WHERE user_id = $1 AND report_type = 'palm_reading'`, [req.userId]),
       pool.query(
         `SELECT id, overall_score, is_paid, analysis_status, language, image_urls, created_at, report_type
-         FROM reports WHERE user_id = $1 AND (report_type = 'fengshui' OR report_type IS NULL) ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+         FROM reports WHERE user_id = $1 AND report_type = 'palm_reading' ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
         [req.userId, limit, offset]
       ),
     ]);
@@ -237,15 +239,9 @@ router.get('/', authMiddleware, async (req, res) => {
       pagination: { page, limit, total: parseInt(countResult.rows[0].count) },
     });
   } catch (error) {
-    console.error('List reports error:', error);
-    res.status(500).json({ error: 'Failed to list reports' });
+    console.error('List palm readings error:', error);
+    res.status(500).json({ error: 'Failed to list readings' });
   }
-});
-
-// Unlock report — disabled until Apple receipt verification is implemented
-// Web payments are handled via Stripe webhook (routes/stripe.js)
-router.post('/:id/unlock', authMiddleware, async (req, res) => {
-  res.status(501).json({ error: 'Apple IAP unlock not available. Please use web checkout.' });
 });
 
 module.exports = router;

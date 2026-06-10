@@ -11,6 +11,7 @@ const initDatabase = require('./config/initDb');
 const authRoutes = require('./routes/auth');
 const reportRoutes = require('./routes/report');
 const stripeRoutes = require('./routes/stripe');
+const palmReadingRoutes = require('./routes/palmreading');
 
 // --- Validate required env vars ---
 const REQUIRED_ENV = ['JWT_SECRET', 'ANTHROPIC_API_KEY', 'RESEND_API_KEY'];
@@ -102,6 +103,7 @@ app.use('/uploads', express.static(uploadsDir, {
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/palm-readings', palmReadingRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

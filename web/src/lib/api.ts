@@ -39,3 +39,10 @@ export const reportAPI = {
   unlock: (id: string, transactionId: string, productId: string) =>
     request(`/reports/${id}/unlock`, { method: 'POST', body: JSON.stringify({ transactionId, productId }) }),
 };
+
+export const palmReadingAPI = {
+  create: (formData: FormData) => request('/palm-readings', { method: 'POST', body: formData }),
+  getAll: () => request('/palm-readings'),
+  getById: (id: string) => request(`/palm-readings/${id}`),
+  getStatus: (id: string) => request(`/palm-readings/${id}/status`),
+};

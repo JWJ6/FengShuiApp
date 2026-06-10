@@ -12,7 +12,7 @@ export function Header() {
         <Link href="/" className="flex items-center gap-2.5 group">
           <span className="text-2xl">☯</span>
           <span className="font-bold text-lg text-primary tracking-wide group-hover:text-primary-dark transition-colors">
-            FengShui Master
+            Fortune Master
           </span>
         </Link>
 
@@ -20,7 +20,10 @@ export function Header() {
           {user ? (
             <>
               <Link href="/analyze" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors">
-                Analyze
+                Feng Shui
+              </Link>
+              <Link href="/palm-reading" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors">
+                Palm Reading
               </Link>
               <Link href="/dashboard" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors">
                 My Reports

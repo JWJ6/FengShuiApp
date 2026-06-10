@@ -7,7 +7,10 @@ const router = express.Router();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const REPORT_PRICE_CENTS = 999; // $9.99
+const PRICING = {
+  fengshui: { cents: 999, name: 'Full Feng Shui Report', description: 'Unlock all areas, detailed solutions, and general tips', path: 'report' },
+  palm_reading: { cents: 1999, name: 'Full Palm & Face Reading', description: 'Unlock all life areas, detailed insights, and personalized guidance', path: 'palm-reading/report' },
+};
 const WEB_BASE_URL = process.env.WEB_BASE_URL || 'http://localhost:3001';
 
 // Create Stripe Checkout session for unlocking a report
@@ -20,7 +23,7 @@ router.post('/checkout', authMiddleware, async (req, res) => {
 
     // Verify report exists and belongs to user
     const reportResult = await pool.query(
-      'SELECT id, is_paid FROM reports WHERE id = $1 AND user_id = $2',
+      'SELECT id, is_paid, report_type FROM reports WHERE id = $1 AND user_id = $2',
       [reportId, req.userId]
     );
     if (reportResult.rows.length === 0) {
@@ -30,6 +33,9 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Report already unlocked' });
     }
 
+    const reportType = reportResult.rows[0].report_type || 'fengshui';
+    const pricing = PRICING[reportType] || PRICING.fengshui;
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       locale: 'en',
@@ -38,17 +44,17 @@ router.post('/checkout', authMiddleware, async (req, res) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'Full Feng Shui Report',
-              description: 'Unlock all areas, detailed solutions, and general tips',
+              name: pricing.name,
+              description: pricing.description,
             },
-            unit_amount: REPORT_PRICE_CENTS,
+            unit_amount: pricing.cents,
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${WEB_BASE_URL}/report/${reportId}?payment=success`,
-      cancel_url: `${WEB_BASE_URL}/report/${reportId}?payment=cancelled`,
+      success_url: `${WEB_BASE_URL}/${pricing.path}/${reportId}?payment=success`,
+      cancel_url: `${WEB_BASE_URL}/${pricing.path}/${reportId}?payment=cancelled`,
       metadata: {
         reportId,
         userId: req.userId,
@@ -84,7 +90,7 @@ router.post('/webhook', async (req, res) => {
         await pool.query(
           `INSERT INTO payments (user_id, report_id, apple_transaction_id, product_id, amount, status)
            VALUES ($1, $2, $3, $4, $5, 'completed')`,
-          [userId, reportId, session.payment_intent, 'stripe_checkout', REPORT_PRICE_CENTS / 100]
+          [userId, reportId, session.payment_intent, 'stripe_checkout', session.amount_total / 100]
         );
 
         // Unlock report

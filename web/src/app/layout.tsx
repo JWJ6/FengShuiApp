@@ -8,8 +8,8 @@ import { Footer } from "@/components/Footer";
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FengShui Master - AI-Powered Home Energy Analysis",
-  description: "Upload a photo of your space and receive an expert Feng Shui analysis powered by AI. Discover how to harmonize your home's energy flow.",
+  title: "Fortune Master - AI Feng Shui & Palm Reading",
+  description: "AI-powered Feng Shui analysis and palm & face reading. Upload photos to discover your home's energy and reveal your life's destiny.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
