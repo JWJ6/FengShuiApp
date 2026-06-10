@@ -62,7 +62,7 @@ const runDetailedAnalysis = async (reportId, imagePaths, language, quickResult) 
 };
 
 // Create new report (Phase 1: quick analysis, then background detailed)
-router.post('/', authMiddleware, createReportLimiter, upload.array('images', 5), async (req, res) => {
+router.post('/', authMiddleware, createReportLimiter, upload.array('images', 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'At least one image is required' });
@@ -166,7 +166,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
         created_at: report.created_at,
       });
     } else if (isComplete) {
-      // Free portion of detailed report
+      // Free portion of detailed report — no solutions (paywall)
       res.json({
         id: report.id,
         overall_score: analysis.overall_score,
@@ -179,7 +179,6 @@ router.get('/:id', authMiddleware, async (req, res) => {
                 description: issue.description,
                 impact: issue.impact,
                 severity: issue.severity,
-                solution: issue.solution,
               })),
               positives: analysis.areas[0].positives,
             }
@@ -189,6 +188,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
           name: a.name,
           score: a.score,
           issue_count: a.issues?.length || 0,
+          solution_count: a.issues?.filter((i) => i.solution)?.length || 0,
           preview: a.issues?.[0]?.description ? a.issues[0].description.slice(0, 80) + '...' : '',
         })),
         analysis_status: report.analysis_status,

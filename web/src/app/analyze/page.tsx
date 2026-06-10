@@ -21,7 +21,7 @@ export default function AnalyzePage() {
       ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp'].includes(f.type)
     );
     setFiles(prev => {
-      const combined = [...prev, ...validFiles].slice(0, 5);
+      const combined = [...prev, ...validFiles].slice(0, 10);
       setPreviews(combined.map(f => URL.createObjectURL(f)));
       return combined;
     });
@@ -107,16 +107,16 @@ export default function AnalyzePage() {
         />
         <div className="text-4xl mb-3">📸</div>
         <p className="text-text font-medium">Drop images here or click to browse</p>
-        <p className="text-text-muted text-sm mt-1">JPEG, PNG, HEIC — up to 5 images, 10MB each</p>
+        <p className="text-text-muted text-sm mt-1">JPEG, PNG, HEIC — up to 10 images, 10MB each</p>
       </div>
 
       {/* Previews */}
       {previews.length > 0 && (
         <div className="mt-6">
           <p className="text-sm font-medium text-text-secondary mb-3">
-            Selected Photos ({files.length}/5)
+            Selected Photos ({files.length}/10)
           </p>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-5 sm:grid-cols-5 gap-3">
             {previews.map((src, i) => (
               <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
                 <img src={src} alt="" className="w-full h-full object-cover" />
@@ -142,7 +142,7 @@ export default function AnalyzePage() {
           {analyzing ? (
             <><span className="animate-spin">☯</span> Analyzing...</>
           ) : (
-            <>Start Analysis ({files.length}/5)</>
+            <>Start Analysis ({files.length}/10)</>
           )}
         </button>
       )}

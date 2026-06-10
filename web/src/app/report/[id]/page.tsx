@@ -22,7 +22,7 @@ function SeverityBadge({ level }: { level: string }) {
   return <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${styles[level] || 'bg-text-muted text-white'}`}>{labels[level] || level}</span>;
 }
 
-function FullAreaCard({ area }: { area: any }) {
+function FullAreaCard({ area, showSolutions = true }: { area: any; showSolutions?: boolean }) {
   return (
     <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
       <div className="flex items-center justify-between mb-4">
@@ -40,10 +40,16 @@ function FullAreaCard({ area }: { area: any }) {
             <span className="text-xs font-bold text-primary uppercase tracking-wider">Impact</span>
             <p className="text-sm text-text-secondary leading-relaxed mt-0.5">{issue.impact}</p>
           </div>
-          {issue.solution && (
+          {showSolutions && issue.solution && (
             <div>
               <span className="text-xs font-bold text-jade uppercase tracking-wider">Solution</span>
               <p className="text-sm text-jade-dark leading-relaxed mt-0.5">{issue.solution}</p>
+            </div>
+          )}
+          {!showSolutions && (
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-sm">🔒</span>
+              <span className="text-xs text-primary font-semibold italic">Solution available — unlock to view</span>
             </div>
           )}
         </div>
@@ -73,9 +79,16 @@ function LockedAreaCard({ area }: { area: any }) {
       {area.preview && (
         <p className="text-sm text-text-muted italic leading-relaxed mb-3">{area.preview}</p>
       )}
-      <div className="flex items-center justify-between bg-bg-secondary rounded-lg px-4 py-2.5">
-        <span className="text-sm text-text-secondary font-medium">{area.issue_count} issues found</span>
-        <span className="text-sm text-primary font-semibold italic">Unlock to view solutions</span>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between bg-[#FDF5F0] rounded-lg px-4 py-2.5">
+          <span className="text-sm text-primary font-medium">{area.issue_count} {area.issue_count === 1 ? 'issue' : 'issues'} found</span>
+          <SeverityBadge level="high" />
+        </div>
+        <div className="flex items-center justify-between bg-[#F0F7F2] rounded-lg px-4 py-2.5">
+          <span className="text-sm text-jade font-medium">{area.solution_count || area.issue_count} {(area.solution_count || area.issue_count) === 1 ? 'solution' : 'solutions'} ready</span>
+          <span className="text-sm">🔒</span>
+        </div>
+        <p className="text-xs text-primary font-semibold italic text-center pt-1">Unlock to view detailed issues, impacts & expert solutions</p>
       </div>
     </div>
   );
@@ -221,7 +234,7 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
       ) : isComplete ? (
         /* FREE + COMPLETE */
         <>
-          {report.first_area && <FullAreaCard area={report.first_area} />}
+          {report.first_area && <FullAreaCard area={report.first_area} showSolutions={false} />}
 
           <div className="flex items-center gap-3 my-6">
             <span className="flex-1 h-px bg-primary/20" />
