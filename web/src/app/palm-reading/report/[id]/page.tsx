@@ -361,7 +361,7 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
             disabled={unlocking}
             className="w-full bg-primary text-gold-light font-semibold py-4 rounded-xl text-lg hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20 mt-4 disabled:opacity-50"
           >
-            {unlocking ? 'Redirecting to checkout...' : 'Unlock Full Reading — $19.99'}
+            {unlocking ? 'Redirecting to checkout...' : 'Unlock Full Reading — $0.01'}
           </button>
         </>
       ) : (
