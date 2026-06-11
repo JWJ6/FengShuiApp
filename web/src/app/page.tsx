@@ -7,7 +7,7 @@ const SERVICES = [
     desc: 'Upload photos of your home and receive expert-level Feng Shui analysis. Discover hidden energy patterns and solutions for wealth, health, and harmony.',
     href: '/analyze',
     cta: 'Analyze My Space',
-    price: '$9.99',
+    price: '$19.90',
     features: ['Up to 10 room photos', '5+ areas analyzed', 'Actionable Feng Shui remedies'],
   },
   {
@@ -16,7 +16,7 @@ const SERVICES = [
     desc: 'Upload a photo of your palm. Our AI fortune master reads your life lines and hand features to reveal your destiny.',
     href: '/palm-reading',
     cta: 'Read My Fortune',
-    price: '$19.99',
+    price: '$19.90',
     features: ['Palm line analysis', '5 life areas revealed', 'Personalized life guidance'],
   },
 ];
@@ -48,7 +48,7 @@ const PALM_STEPS = [
   {
     icon: '🔮',
     title: 'AI Fortune Reading',
-    desc: 'Our AI master analyzes your palm lines, hand shape, and facial features using ancient Chinese palmistry and physiognomy.',
+    desc: 'Our AI master analyzes your palm lines, hand shape, and mounts using ancient Chinese and Western palmistry traditions.',
   },
   {
     icon: '📜',
@@ -217,7 +217,7 @@ export default function Home() {
                 FENG SHUI
               </div>
               <div className="text-sm font-semibold text-primary uppercase tracking-wider">Full Report</div>
-              <div className="text-4xl font-bold mt-2 text-text">$9.99</div>
+              <div className="text-4xl font-bold mt-2 text-text">$19.90</div>
               <div className="text-text-muted text-sm mt-1">per report</div>
               <ul className="mt-6 space-y-3 text-sm text-text-secondary">
                 <li className="flex gap-2"><span className="text-jade">✓</span> All areas unlocked</li>
@@ -232,7 +232,7 @@ export default function Home() {
                 PALM READING
               </div>
               <div className="text-sm font-semibold text-gold uppercase tracking-wider">Full Reading</div>
-              <div className="text-4xl font-bold mt-2 text-text">$19.99</div>
+              <div className="text-4xl font-bold mt-2 text-text">$19.90</div>
               <div className="text-text-muted text-sm mt-1">per reading</div>
               <ul className="mt-6 space-y-3 text-sm text-text-secondary">
                 <li className="flex gap-2"><span className="text-jade">✓</span> 5 life areas unlocked</li>
