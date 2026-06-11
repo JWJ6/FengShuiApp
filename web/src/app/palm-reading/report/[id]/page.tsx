@@ -60,11 +60,69 @@ function FullAreaCard({ area }: { area: any }) {
       ))}
 
       {area.positives?.length > 0 && (
-        <div className="bg-[#F0F7F2] rounded-xl p-4 border-l-3 border-l-jade">
+        <div className="bg-[#F0F7F2] rounded-xl p-4 border-l-3 border-l-jade mb-3">
           <span className="text-xs font-bold text-jade uppercase tracking-wider">Strengths</span>
           {area.positives.map((p: string, i: number) => (
             <p key={i} className="text-sm text-jade-dark leading-relaxed mt-1">✦ {p}</p>
           ))}
+        </div>
+      )}
+
+      {area.suggestions?.length > 0 && (
+        <div className="bg-[#F0F4FF] rounded-xl p-4 border-l-3 border-l-[#6366F1]">
+          <span className="text-xs font-bold text-[#6366F1] uppercase tracking-wider">Suggestions</span>
+          {area.suggestions.map((s: string, i: number) => (
+            <div key={i} className="flex gap-2 mt-1.5">
+              <span className="text-[#6366F1] text-sm font-bold">{i + 1}.</span>
+              <p className="text-sm text-text-secondary leading-relaxed">{s}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FreeAreaCard({ area }: { area: any }) {
+  return (
+    <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-text flex items-center gap-2">
+          <span>{AREA_ICONS[area.name] || '✦'}</span> {area.name}
+        </h3>
+        <ScoreCircle score={area.score} size={48} />
+      </div>
+
+      {area.issues?.map((issue: any, i: number) => (
+        <div key={i} className="bg-[#FDF5F0] rounded-xl p-4 mb-3 border-l-3 border-l-primary">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <p className="text-sm font-semibold text-text leading-relaxed flex-1">{issue.description}</p>
+            <SeverityBadge level={issue.severity} />
+          </div>
+          <div className="mb-2">
+            <span className="text-xs font-bold text-primary uppercase tracking-wider">Impact</span>
+            <p className="text-sm text-text-secondary leading-relaxed mt-0.5">{issue.impact}</p>
+          </div>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-sm">🔒</span>
+            <span className="text-xs text-primary font-semibold italic">Guidance available — unlock to view</span>
+          </div>
+        </div>
+      ))}
+
+      {area.positives?.length > 0 && (
+        <div className="bg-[#F0F7F2] rounded-xl p-4 border-l-3 border-l-jade mb-3">
+          <span className="text-xs font-bold text-jade uppercase tracking-wider">Strengths</span>
+          {area.positives.map((p: string, i: number) => (
+            <p key={i} className="text-sm text-jade-dark leading-relaxed mt-1">✦ {p}</p>
+          ))}
+        </div>
+      )}
+
+      {area.suggestion_count > 0 && (
+        <div className="flex items-center justify-between bg-[#F0F4FF] rounded-lg px-4 py-2.5">
+          <span className="text-sm text-[#6366F1] font-medium">{area.suggestion_count} {area.suggestion_count === 1 ? 'suggestion' : 'suggestions'} ready</span>
+          <span className="text-sm">🔒</span>
         </div>
       )}
     </div>
@@ -92,6 +150,12 @@ function LockedAreaCard({ area }: { area: any }) {
           <span className="text-sm text-jade font-medium">{area.solution_count || area.issue_count} guidance ready</span>
           <span className="text-sm">🔒</span>
         </div>
+        {area.suggestion_count > 0 && (
+          <div className="flex items-center justify-between bg-[#F0F4FF] rounded-lg px-4 py-2.5">
+            <span className="text-sm text-[#6366F1] font-medium">{area.suggestion_count} {area.suggestion_count === 1 ? 'suggestion' : 'suggestions'} ready</span>
+            <span className="text-sm">🔒</span>
+          </div>
+        )}
         <p className="text-xs text-primary font-semibold italic text-center pt-1">Unlock to reveal detailed insights & personalized guidance</p>
       </div>
     </div>
@@ -248,21 +312,6 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
             </div>
           )}
 
-          {/* Suggestions */}
-          {report.suggestions?.length > 0 && (
-            <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
-              <div className="flex items-center gap-2 mb-4 text-gold text-sm">
-                <span className="w-6 h-px bg-gold" /><span className="font-bold text-text tracking-wider">Suggestions</span><span className="w-6 h-px bg-gold" />
-              </div>
-              {report.suggestions.map((s: string, i: number) => (
-                <div key={i} className="flex gap-3 mb-3 last:mb-0">
-                  <span className="text-primary font-bold text-sm mt-0.5">{i + 1}.</span>
-                  <p className="text-sm text-text-secondary leading-relaxed">{s}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* General Tips */}
           {report.general_tips && (
             <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
@@ -276,31 +325,9 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
           )}
         </>
       ) : isComplete ? (
-        /* FREE + COMPLETE — only partial wealth teaser */
+        /* FREE + COMPLETE — wealth area with issues but suggestions locked */
         <>
-          {/* Wealth teaser */}
-          {report.wealth_preview && (
-            <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-bold text-text flex items-center gap-2">
-                  <span>💰</span> {report.wealth_preview.name}
-                </h3>
-                <ScoreCircle score={report.wealth_preview.score} size={48} />
-              </div>
-              {report.wealth_preview.teaser && (
-                <div className="bg-[#FDF5F0] rounded-xl p-4 border-l-3 border-l-primary mb-3">
-                  <p className="text-sm text-text leading-relaxed">{report.wealth_preview.teaser}</p>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className="text-sm">🔒</span>
-                    <span className="text-xs text-primary font-semibold italic">Full analysis & guidance — unlock to view</span>
-                  </div>
-                </div>
-              )}
-              {report.wealth_preview.positive_count > 0 && (
-                <p className="text-xs text-jade font-medium">+ {report.wealth_preview.positive_count} positive {report.wealth_preview.positive_count === 1 ? 'sign' : 'signs'} detected</p>
-              )}
-            </div>
-          )}
+          {report.first_area && <FreeAreaCard area={report.first_area} />}
 
           <div className="flex items-center gap-3 my-6">
             <span className="flex-1 h-px bg-primary/20" />
@@ -310,22 +337,12 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
 
           {report.locked_areas?.map((a: any, i: number) => <LockedAreaCard key={i} area={a} />)}
 
-          {/* Locked life stages & suggestions teaser */}
-          {(report.has_life_stages || report.has_suggestions) && (
+          {/* Locked life stages teaser */}
+          {report.has_life_stages && (
             <div className="bg-bg-card rounded-2xl p-6 border border-dashed border-text-muted mb-4 opacity-80">
-              <div className="space-y-2">
-                {report.has_life_stages && (
-                  <div className="flex items-center justify-between bg-[#FFF8F0] rounded-lg px-4 py-2.5">
-                    <span className="text-sm text-gold font-medium">Life Timeline (Early / Middle / Late Years)</span>
-                    <span className="text-sm">🔒</span>
-                  </div>
-                )}
-                {report.has_suggestions && (
-                  <div className="flex items-center justify-between bg-[#F0F4FF] rounded-lg px-4 py-2.5">
-                    <span className="text-sm text-primary font-medium">Personalized Suggestions & Guidance</span>
-                    <span className="text-sm">🔒</span>
-                  </div>
-                )}
+              <div className="flex items-center justify-between bg-[#FFF8F0] rounded-lg px-4 py-2.5">
+                <span className="text-sm text-gold font-medium">Life Timeline (Early / Middle / Late Years)</span>
+                <span className="text-sm">🔒</span>
               </div>
             </div>
           )}

@@ -124,7 +124,8 @@ Now provide the full detailed analysis. Return a JSON object with this exact str
           "solution": "<actionable advice: remedies, lucky colors, directions, lifestyle changes, ~40 words>"
         }
       ],
-      "positives": ["<positive reading, ~25 words each>"]
+      "positives": ["<positive reading, ~25 words each>"],
+      "suggestions": ["<specific actionable suggestion for improving this life area, ~30 words each>"]
     }
   ],
   "life_stages": {
@@ -132,19 +133,16 @@ Now provide the full detailed analysis. Return a JSON object with this exact str
     "middle_years": "<fortune and key turning points in middle age (30-55), ~60 words>",
     "late_years": "<fortune, health, and legacy in later years (55+), ~60 words>"
   },
-  "suggestions": [
-    "<specific, actionable life suggestion based on the reading, ~30 words each>"
-  ],
   "general_tips": ["<holistic life advice, ~30 words each>"]
 }
 
 Important rules:
 - Use the EXACT same area names and scores from the quick analysis — do NOT change any scores
 - Each area MUST have 2 observations (issues) with solutions AND 1-2 positives
+- Each area MUST have 2-3 suggestions specific to that life area (e.g. Wealth area: "Wear gold jewelry on your left hand to enhance wealth energy")
 - Reference specific palm lines and hand features
 - Mention Five Elements, lucky numbers, colors, and directions
 - life_stages MUST cover early (before 30), middle (30-55), and late (55+) years with specific predictions
-- Provide 3-5 suggestions (e.g. "Wear gold jewelry on your left hand to enhance wealth energy")
 - Provide 3-5 general tips
 - Keep descriptions concise to reduce response length
 - Be encouraging but honest
