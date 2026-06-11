@@ -12,12 +12,12 @@ const SERVICES = [
   },
   {
     icon: '🤚',
-    title: 'Palm & Face Reading',
-    desc: 'Upload a photo of your face and palm. Our AI fortune master reads your life lines and facial features to reveal your destiny.',
+    title: 'Palm Reading',
+    desc: 'Upload a photo of your palm. Our AI fortune master reads your life lines and hand features to reveal your destiny.',
     href: '/palm-reading',
     cta: 'Read My Fortune',
     price: '$19.99',
-    features: ['Face + palm analysis', '5 life areas revealed', 'Personalized life guidance'],
+    features: ['Palm line analysis', '5 life areas revealed', 'Personalized life guidance'],
   },
 ];
 
@@ -43,7 +43,7 @@ const PALM_STEPS = [
   {
     icon: '🧑',
     title: 'Upload Your Photos',
-    desc: 'Take a clear photo of your face and your dominant palm. Good lighting ensures the best reading.',
+    desc: 'Take a clear photo of your dominant palm with fingers spread. Good lighting ensures the best reading.',
   },
   {
     icon: '🔮',
@@ -79,7 +79,7 @@ export default function Home() {
           </h1>
           <p className="mt-6 text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
             Ancient wisdom meets modern AI. Get expert Feng Shui analysis for your home or
-            a personalized palm &amp; face reading to reveal your life&apos;s path.
+            a personalized palm reading to reveal your life&apos;s path.
           </p>
 
           {/* Two service CTAs */}
@@ -94,7 +94,7 @@ export default function Home() {
               href="/palm-reading"
               className="inline-flex items-center justify-center gap-2 border-2 border-primary text-primary font-semibold px-8 py-4 rounded-xl text-lg hover:bg-primary hover:text-gold-light transition-all"
             >
-              Palm & Face Reading 🤚
+              Palm Reading 🤚
             </Link>
           </div>
 
@@ -171,7 +171,7 @@ export default function Home() {
       <section className="py-20 bg-bg-card border-y border-border">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-text">How Palm & Face Reading Works</h2>
+            <h2 className="text-3xl font-bold text-text">How Palm Reading Works</h2>
             <div className="flex justify-center items-center gap-2 mt-3 text-gold text-sm">
               <span className="w-8 h-px bg-gold" /><span>◆</span><span className="w-8 h-px bg-gold" />
             </div>
@@ -263,7 +263,7 @@ export default function Home() {
               href="/palm-reading"
               className="inline-flex items-center gap-2 bg-gold-light/20 text-gold-light font-bold px-8 py-4 rounded-xl text-lg hover:bg-gold-light/30 transition-colors border border-gold-light/30"
             >
-              Palm & Face Reading
+              Palm Reading
             </Link>
           </div>
         </div>

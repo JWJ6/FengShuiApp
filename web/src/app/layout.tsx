@@ -9,7 +9,7 @@ const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Fortune Master - AI Feng Shui & Palm Reading",
-  description: "AI-powered Feng Shui analysis and palm & face reading. Upload photos to discover your home's energy and reveal your life's destiny.",
+  description: "AI-powered Feng Shui analysis and palm reading. Upload photos to discover your home's energy and reveal your life's destiny.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

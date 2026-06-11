@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PRICING = {
   fengshui: { cents: 999, name: 'Full Feng Shui Report', description: 'Unlock all areas, detailed solutions, and general tips', path: 'report' },
-  palm_reading: { cents: 1999, name: 'Full Palm & Face Reading', description: 'Unlock all life areas, detailed insights, and personalized guidance', path: 'palm-reading/report' },
+  palm_reading: { cents: 1999, name: 'Full Palm Reading', description: 'Unlock all life areas, detailed insights, and personalized guidance', path: 'palm-reading/report' },
 };
 const WEB_BASE_URL = process.env.WEB_BASE_URL || 'http://localhost:3001';
 
