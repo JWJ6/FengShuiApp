@@ -8,8 +8,8 @@ const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const PRICING = {
-  fengshui: { cents: 1, name: 'Full Feng Shui Report', description: 'Unlock all areas, detailed solutions, and general tips', path: 'report' },
-  palm_reading: { cents: 1, name: 'Full Palm Reading', description: 'Unlock all life areas, detailed insights, and personalized guidance', path: 'palm-reading/report' },
+  fengshui: { cents: 50, name: 'Full Feng Shui Report', description: 'Unlock all areas, detailed solutions, and general tips', path: 'report' },
+  palm_reading: { cents: 50, name: 'Full Palm Reading', description: 'Unlock all life areas, detailed insights, and personalized guidance', path: 'palm-reading/report' },
 };
 const WEB_BASE_URL = process.env.WEB_BASE_URL || 'http://localhost:3001';
 
