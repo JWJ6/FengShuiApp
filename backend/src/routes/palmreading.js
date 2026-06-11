@@ -151,12 +151,14 @@ router.get('/:id', authMiddleware, async (req, res) => {
     }
 
     if (report.is_paid && isComplete) {
-      // Full report — all areas with solutions
+      // Full report — all areas with solutions + life stages + suggestions
       res.json({
         id: report.id,
         overall_score: analysis.overall_score,
         overall_summary: analysis.overall_summary,
         areas: analysis.areas,
+        life_stages: analysis.life_stages || null,
+        suggestions: analysis.suggestions || [],
         general_tips: analysis.general_tips,
         analysis_status: report.analysis_status,
         is_paid: true,
@@ -165,32 +167,30 @@ router.get('/:id', authMiddleware, async (req, res) => {
         created_at: report.created_at,
       });
     } else if (isComplete) {
-      // Free portion — show Wealth area preview (no solutions), lock the rest
-      // Find wealth area (first area)
+      // Free portion — show only a brief wealth teaser, lock everything else
       const wealthArea = analysis.areas[0];
+      const firstIssue = wealthArea?.issues?.[0];
       res.json({
         id: report.id,
         overall_score: analysis.overall_score,
         overall_summary: analysis.overall_summary,
-        first_area: wealthArea
+        wealth_preview: wealthArea
           ? {
               name: wealthArea.name,
               score: wealthArea.score,
-              issues: wealthArea.issues.map((issue) => ({
-                description: issue.description,
-                impact: issue.impact,
-                severity: issue.severity,
-              })),
-              positives: wealthArea.positives,
+              teaser: firstIssue ? firstIssue.description : null,
+              positive_count: wealthArea.positives?.length || 0,
             }
           : null,
         total_areas: analysis.areas.length,
-        locked_areas: analysis.areas.slice(1).map((a) => ({
+        has_life_stages: !!analysis.life_stages,
+        has_suggestions: !!(analysis.suggestions?.length),
+        locked_areas: analysis.areas.map((a) => ({
           name: a.name,
           score: a.score,
           issue_count: a.issues?.length || 0,
           solution_count: a.issues?.filter((i) => i.solution)?.length || 0,
-          preview: a.issues?.[0]?.description ? a.issues[0].description.slice(0, 80) + '...' : '',
+          preview: a.issues?.[0]?.description ? a.issues[0].description.slice(0, 60) + '...' : '',
         })),
         analysis_status: report.analysis_status,
         is_paid: false,

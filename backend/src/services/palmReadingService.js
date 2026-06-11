@@ -118,26 +118,36 @@ Now provide the full detailed analysis. Return a JSON object with this exact str
       "score": <must match the score from quick analysis>,
       "issues": [
         {
-          "description": "<detailed observation about palm lines, hand shape, or mount features related to this area, ~50 words>",
-          "impact": "<how this affects the person's fortune, opportunities, and life trajectory in this area, ~60 words>",
+          "description": "<observation about palm lines or hand features, ~30 words>",
+          "impact": "<how this affects fortune in this area, ~30 words>",
           "severity": "<high/medium/low>",
-          "solution": "<specific actionable advice: feng shui remedies, lucky colors, auspicious directions, lifestyle changes, gemstones, ~80 words>"
+          "solution": "<actionable advice: remedies, lucky colors, directions, lifestyle changes, ~40 words>"
         }
       ],
-      "positives": ["<positive reading about this area based on observed palm features, ~40 words each>"]
+      "positives": ["<positive reading, ~25 words each>"]
     }
   ],
-  "general_tips": ["<holistic life advice based on the overall palm reading, ~50 words each>"]
+  "life_stages": {
+    "early_years": "<fortune and key events in youth and early adulthood (before 30), ~60 words>",
+    "middle_years": "<fortune and key turning points in middle age (30-55), ~60 words>",
+    "late_years": "<fortune, health, and legacy in later years (55+), ~60 words>"
+  },
+  "suggestions": [
+    "<specific, actionable life suggestion based on the reading, ~30 words each>"
+  ],
+  "general_tips": ["<holistic life advice, ~30 words each>"]
 }
 
 Important rules:
 - Use the EXACT same area names and scores from the quick analysis — do NOT change any scores
-- Each area MUST have 2-3 detailed observations (issues) with solutions AND 2+ positive readings
-- Reference specific palm lines (Life Line, Heart Line, Head Line, Fate Line, Sun Line, Money Line, Marriage Lines, etc.)
-- Reference hand features (mounts, finger shape, thumb strength, skin texture, nail condition)
-- Mention Five Elements associations, lucky numbers, colors, and directions
-- Provide 5+ general tips covering wealth enhancement, relationship harmony, career growth, health maintenance, and spiritual development
-- Be encouraging but honest — frame challenges as opportunities for growth
+- Each area MUST have 2 observations (issues) with solutions AND 1-2 positives
+- Reference specific palm lines and hand features
+- Mention Five Elements, lucky numbers, colors, and directions
+- life_stages MUST cover early (before 30), middle (30-55), and late (55+) years with specific predictions
+- Provide 3-5 suggestions (e.g. "Wear gold jewelry on your left hand to enhance wealth energy")
+- Provide 3-5 general tips
+- Keep descriptions concise to reduce response length
+- Be encouraging but honest
 - Return ONLY valid JSON, no markdown or extra text`;
 };
 
@@ -209,7 +219,7 @@ const analyzeDetailed = async (imagePaths, language = 'en', quickResult) => {
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 8192,
+    max_tokens: 4096,
     temperature: 0,
     messages: [
       {

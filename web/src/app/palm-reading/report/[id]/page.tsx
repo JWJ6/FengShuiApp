@@ -22,19 +22,20 @@ function SeverityBadge({ level }: { level: string }) {
   return <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${styles[level] || 'bg-text-muted text-white'}`}>{labels[level] || level}</span>;
 }
 
-function FullAreaCard({ area, showSolutions = true }: { area: any; showSolutions?: boolean }) {
-  const areaIcon: Record<string, string> = {
-    'Wealth & Finance': '💰',
-    'Love & Relationships': '❤️',
-    'Career & Success': '🏆',
-    'Health & Vitality': '🌿',
-    'Life Path & Destiny': '🔮',
-  };
+const AREA_ICONS: Record<string, string> = {
+  'Wealth & Finance': '💰',
+  'Love & Relationships': '❤️',
+  'Career & Success': '🏆',
+  'Health & Vitality': '🌿',
+  'Life Path & Destiny': '🔮',
+};
+
+function FullAreaCard({ area }: { area: any }) {
   return (
     <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-text flex items-center gap-2">
-          <span>{areaIcon[area.name] || '✦'}</span> {area.name}
+          <span>{AREA_ICONS[area.name] || '✦'}</span> {area.name}
         </h3>
         <ScoreCircle score={area.score} size={48} />
       </div>
@@ -49,16 +50,10 @@ function FullAreaCard({ area, showSolutions = true }: { area: any; showSolutions
             <span className="text-xs font-bold text-primary uppercase tracking-wider">Impact</span>
             <p className="text-sm text-text-secondary leading-relaxed mt-0.5">{issue.impact}</p>
           </div>
-          {showSolutions && issue.solution && (
+          {issue.solution && (
             <div>
               <span className="text-xs font-bold text-jade uppercase tracking-wider">Guidance</span>
               <p className="text-sm text-jade-dark leading-relaxed mt-0.5">{issue.solution}</p>
-            </div>
-          )}
-          {!showSolutions && (
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-sm">🔒</span>
-              <span className="text-xs text-primary font-semibold italic">Guidance available — unlock to view</span>
             </div>
           )}
         </div>
@@ -77,18 +72,11 @@ function FullAreaCard({ area, showSolutions = true }: { area: any; showSolutions
 }
 
 function LockedAreaCard({ area }: { area: any }) {
-  const areaIcon: Record<string, string> = {
-    'Wealth & Finance': '💰',
-    'Love & Relationships': '❤️',
-    'Career & Success': '🏆',
-    'Health & Vitality': '🌿',
-    'Life Path & Destiny': '🔮',
-  };
   return (
     <div className="bg-bg-card rounded-2xl p-6 border border-dashed border-text-muted mb-4 opacity-80">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-bold text-text flex items-center gap-2">
-          <span className="text-sm">🔒</span> <span>{areaIcon[area.name] || '✦'}</span> {area.name}
+          <span className="text-sm">🔒</span> <span>{AREA_ICONS[area.name] || '✦'}</span> {area.name}
         </h3>
         <ScoreCircle score={area.score} size={48} />
       </div>
@@ -101,7 +89,7 @@ function LockedAreaCard({ area }: { area: any }) {
           <SeverityBadge level="high" />
         </div>
         <div className="flex items-center justify-between bg-[#F0F7F2] rounded-lg px-4 py-2.5">
-          <span className="text-sm text-jade font-medium">{area.solution_count || area.issue_count} {(area.solution_count || area.issue_count) === 1 ? 'guidance' : 'guidances'} ready</span>
+          <span className="text-sm text-jade font-medium">{area.solution_count || area.issue_count} guidance ready</span>
           <span className="text-sm">🔒</span>
         </div>
         <p className="text-xs text-primary font-semibold italic text-center pt-1">Unlock to reveal detailed insights & personalized guidance</p>
@@ -111,18 +99,11 @@ function LockedAreaCard({ area }: { area: any }) {
 }
 
 function QuickAreaCard({ area }: { area: any }) {
-  const areaIcon: Record<string, string> = {
-    'Wealth & Finance': '💰',
-    'Love & Relationships': '❤️',
-    'Career & Success': '🏆',
-    'Health & Vitality': '🌿',
-    'Life Path & Destiny': '🔮',
-  };
   return (
     <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-lg font-bold text-text flex items-center gap-2">
-          <span>{areaIcon[area.name] || '✦'}</span> {area.name}
+          <span>{AREA_ICONS[area.name] || '✦'}</span> {area.name}
         </h3>
         <ScoreCircle score={area.score} size={48} />
       </div>
@@ -141,7 +122,6 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
   const pollingRef = useRef<ReturnType<typeof setInterval>>(null);
   const retryCount = useRef(0);
 
-  // Handle payment redirect
   useEffect(() => {
     const url = new URL(window.location.href);
     const payment = url.searchParams.get('payment');
@@ -161,7 +141,6 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Poll for detailed analysis
   useEffect(() => {
     if (report?.analysis_status !== 'analyzing') return;
     retryCount.current = 0;
@@ -219,9 +198,10 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
 
       {/* Analyzing banner */}
       {isAnalyzing && (
-        <div className="flex items-center justify-center gap-3 bg-bg-card border border-gold rounded-xl px-6 py-4 mb-6">
-          <span className="animate-spin">🤚</span>
-          <span className="text-gold font-semibold text-sm">Reading your fortune in detail, please wait...</span>
+        <div className="bg-bg-card border border-gold rounded-xl px-6 py-5 mb-6 text-center">
+          <span className="animate-spin inline-block text-2xl mb-2">🤚</span>
+          <p className="text-gold font-semibold text-sm">Analyzing your palm lines in detail...</p>
+          <p className="text-text-muted text-xs mt-1">This may take 1-2 minutes. Please stay on this page.</p>
         </div>
       )}
 
@@ -244,6 +224,46 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
       {isPaid && isComplete && report.areas ? (
         <>
           {report.areas.map((a: any, i: number) => <FullAreaCard key={i} area={a} />)}
+
+          {/* Life Stages */}
+          {report.life_stages && (
+            <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
+              <div className="flex items-center gap-2 mb-4 text-gold text-sm">
+                <span className="w-6 h-px bg-gold" /><span className="font-bold text-text tracking-wider">Life Timeline</span><span className="w-6 h-px bg-gold" />
+              </div>
+              <div className="space-y-4">
+                <div className="bg-[#FFF8F0] rounded-xl p-4 border-l-3 border-l-gold">
+                  <span className="text-xs font-bold text-gold uppercase tracking-wider">Early Years (Before 30)</span>
+                  <p className="text-sm text-text-secondary leading-relaxed mt-1">{report.life_stages.early_years}</p>
+                </div>
+                <div className="bg-[#F0F4FF] rounded-xl p-4 border-l-3 border-l-primary">
+                  <span className="text-xs font-bold text-primary uppercase tracking-wider">Middle Years (30-55)</span>
+                  <p className="text-sm text-text-secondary leading-relaxed mt-1">{report.life_stages.middle_years}</p>
+                </div>
+                <div className="bg-[#F0F7F2] rounded-xl p-4 border-l-3 border-l-jade">
+                  <span className="text-xs font-bold text-jade uppercase tracking-wider">Later Years (55+)</span>
+                  <p className="text-sm text-text-secondary leading-relaxed mt-1">{report.life_stages.late_years}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Suggestions */}
+          {report.suggestions?.length > 0 && (
+            <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
+              <div className="flex items-center gap-2 mb-4 text-gold text-sm">
+                <span className="w-6 h-px bg-gold" /><span className="font-bold text-text tracking-wider">Suggestions</span><span className="w-6 h-px bg-gold" />
+              </div>
+              {report.suggestions.map((s: string, i: number) => (
+                <div key={i} className="flex gap-3 mb-3 last:mb-0">
+                  <span className="text-primary font-bold text-sm mt-0.5">{i + 1}.</span>
+                  <p className="text-sm text-text-secondary leading-relaxed">{s}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* General Tips */}
           {report.general_tips && (
             <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
               <div className="flex items-center gap-2 mb-4 text-gold text-sm">
@@ -256,9 +276,31 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
           )}
         </>
       ) : isComplete ? (
-        /* FREE + COMPLETE */
+        /* FREE + COMPLETE — only partial wealth teaser */
         <>
-          {report.first_area && <FullAreaCard area={report.first_area} showSolutions={false} />}
+          {/* Wealth teaser */}
+          {report.wealth_preview && (
+            <div className="bg-bg-card rounded-2xl p-6 border border-border mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-bold text-text flex items-center gap-2">
+                  <span>💰</span> {report.wealth_preview.name}
+                </h3>
+                <ScoreCircle score={report.wealth_preview.score} size={48} />
+              </div>
+              {report.wealth_preview.teaser && (
+                <div className="bg-[#FDF5F0] rounded-xl p-4 border-l-3 border-l-primary mb-3">
+                  <p className="text-sm text-text leading-relaxed">{report.wealth_preview.teaser}</p>
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <span className="text-sm">🔒</span>
+                    <span className="text-xs text-primary font-semibold italic">Full analysis & guidance — unlock to view</span>
+                  </div>
+                </div>
+              )}
+              {report.wealth_preview.positive_count > 0 && (
+                <p className="text-xs text-jade font-medium">+ {report.wealth_preview.positive_count} positive {report.wealth_preview.positive_count === 1 ? 'sign' : 'signs'} detected</p>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center gap-3 my-6">
             <span className="flex-1 h-px bg-primary/20" />
@@ -267,6 +309,26 @@ export default function PalmReadingReportPage({ params }: { params: Promise<{ id
           </div>
 
           {report.locked_areas?.map((a: any, i: number) => <LockedAreaCard key={i} area={a} />)}
+
+          {/* Locked life stages & suggestions teaser */}
+          {(report.has_life_stages || report.has_suggestions) && (
+            <div className="bg-bg-card rounded-2xl p-6 border border-dashed border-text-muted mb-4 opacity-80">
+              <div className="space-y-2">
+                {report.has_life_stages && (
+                  <div className="flex items-center justify-between bg-[#FFF8F0] rounded-lg px-4 py-2.5">
+                    <span className="text-sm text-gold font-medium">Life Timeline (Early / Middle / Late Years)</span>
+                    <span className="text-sm">🔒</span>
+                  </div>
+                )}
+                {report.has_suggestions && (
+                  <div className="flex items-center justify-between bg-[#F0F4FF] rounded-lg px-4 py-2.5">
+                    <span className="text-sm text-primary font-medium">Personalized Suggestions & Guidance</span>
+                    <span className="text-sm">🔒</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <button
             onClick={async () => {
