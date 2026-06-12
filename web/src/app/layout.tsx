@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Header } from "@/components/Header";
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <Analytics />
         </Providers>
       </body>
     </html>
